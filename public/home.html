@@ -1,105 +1,58 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Nosso Cantinho ❤️</title>
+<title>Para Laura ❤️</title>
 
 <link rel="stylesheet" href="css/style.css">
-
-<style>
-
-.login-box{
-
-max-width:500px;
-
-margin:120px auto;
-
-text-align:center;
-
-padding:40px;
-
-background:rgba(255,255,255,.12);
-
-backdrop-filter:blur(20px);
-
-border-radius:30px;
-}
-
-.login-box input{
-
-width:100%;
-
-padding:15px;
-
-margin-top:20px;
-
-border:none;
-
-border-radius:15px;
-
-font-size:18px;
-
-outline:none;
-}
-
-.login-box button{
-
-margin-top:20px;
-
-padding:15px 30px;
-
-border:none;
-
-border-radius:15px;
-
-cursor:pointer;
-
-font-size:18px;
-
-background:white;
-}
-
-#erro{
-
-margin-top:15px;
-
-color:#ffb3b3;
-}
-
-</style>
-
 </head>
 
 <body>
 
 <div class="stars"></div>
 
-<div class="login-box">
+<section class="hero">
 
-<h1>❤️ Nosso Cantinho ❤️</h1>
+<h1>❤️ Para Laura ❤️</h1>
 
-<p>
-Digite a data especial para entrar
+<p class="subtitle">
+Cada foto, cada carta e cada segundo guardado aqui
+existe porque você se tornou uma das partes mais
+importantes da minha vida.
 </p>
 
-<input
-type="password"
-id="senha"
-placeholder="DDMMAA"
->
+<div id="contador"></div>
 
-<button onclick="entrar()">
-Entrar
-</button>
+<p class="data">
+Desde a mensagem que mudou tudo.
+</p>
 
-<p id="erro"></p>
+</section>
 
-</div>
+<section class="cards">
 
-<script src="js/login.js"></script>
+<a href="galeria.html" class="card">
+<div class="icon">📸</div>
+<h2>Nossas Fotos</h2>
+<p>Momentos que merecem ser lembrados.</p>
+</a>
+
+<a href="cartas.html" class="card">
+<div class="icon">💌</div>
+<h2>Cartas</h2>
+<p>Palavras que nunca quero esquecer.</p>
+</a>
+
+<a href="abrir-depois.html" class="card">
+<div class="icon">🌙</div>
+<h2>Abra Quando...</h2>
+<p>Mensagens para cada momento.</p>
+</a>
+
+</section>
+
+<script src="js/script.js"></script>
 
 </body>
 </html>
