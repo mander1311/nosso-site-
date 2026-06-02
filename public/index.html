@@ -1,114 +1,37 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nós ❤️</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
-}
-
-body{
-    min-height:100vh;
-    background:linear-gradient(
-        180deg,
-        #0d021f 0%,
-        #230048 50%,
-        #5d1c85 100%
-    );
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:40px 20px;
-    color:white;
-}
-
-.heart{
-    font-size:55px;
-    margin-bottom:30px;
-    color:#d67dff;
-}
-
-.card{
-    width:90%;
-    max-width:700px;
-
-    background:rgba(125, 59, 184, 0.35);
-
-    border:2px solid rgba(222,170,255,.3);
-
-    border-radius:30px;
-
-    padding:50px;
-
-    margin-bottom:30px;
-
-    text-align:center;
-
-    backdrop-filter:blur(10px);
-
-    transition:.3s;
-}
-
-.card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 0 30px #b95cff;
-}
-
-.icon{
-    font-size:60px;
-    margin-bottom:20px;
-}
-
-h2{
-    font-size:2.5rem;
-    font-weight:bold;
-}
-
-.line{
-    width:60px;
-    height:4px;
-    background:#c86cff;
-    margin:20px auto 0 auto;
-    border-radius:10px;
-}
-
-a{
-    text-decoration:none;
-    color:white;
-}
-</style>
-
+<title>Para Laura ❤️</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
-<div class="heart">❤️</div>
+<header>
+<h1>❤️ Para Laura ❤️</h1>
+<p>Um lugar onde guardei tudo aquilo que sinto por você.</p>
+</header>
 
-<a href="fotos.html" class="card">
-    <div class="icon">📷</div>
-    <h2>Nossas Fotos</h2>
-    <div class="line"></div>
-</a>
+<nav>
+<a href="index.html">Início</a>
+<a href="galeria.html">Galeria</a>
+<a href="cartas.html">Cartas</a>
+<a href="abrir-depois.html">Abrir Depois</a>
+</nav>
 
-<a href="cartas.html" class="card">
-    <div class="icon">💌</div>
-    <h2>Cartas</h2>
-    <div class="line"></div>
-</a>
+<section class="hero">
+<h2>Desde a mensagem que mudou tudo...</h2>
 
-<a href="datas.html" class="card">
-    <div class="icon">📅</div>
-    <h2>Datas</h2>
-    <div class="line"></div>
-</a>
+<div id="contador"></div>
+
+<p>
+09 de Abril • 15:20
+</p>
+</section>
+
+<script src="js/script.js"></script>
 
 </body>
 </html>
-```

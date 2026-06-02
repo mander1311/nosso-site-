@@ -1,0 +1,80 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+background:linear-gradient(
+135deg,
+#0f172a,
+#1e3a8a,
+#3b82f6
+);
+
+min-height:100vh;
+color:white;
+}
+
+header{
+text-align:center;
+padding:50px 20px;
+}
+
+header h1{
+font-size:3rem;
+margin-bottom:15px;
+}
+
+nav{
+display:flex;
+justify-content:center;
+gap:20px;
+padding:20px;
+flex-wrap:wrap;
+}
+
+nav a{
+color:white;
+text-decoration:none;
+padding:10px 20px;
+border-radius:20px;
+background:rgba(255,255,255,0.15);
+}
+
+.hero{
+text-align:center;
+padding:60px 20px;
+}
+
+#contador{
+font-size:2rem;
+font-weight:bold;
+margin:30px 0;
+}
+
+.galeria{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+padding:40px;
+}
+
+.galeria img{
+width:100%;
+border-radius:20px;
+}
+
+.carta{
+max-width:900px;
+margin:30px auto;
+padding:30px;
+background:rgba(255,255,255,0.1);
+border-radius:20px;
+backdrop-filter:blur(10px);
+}
+
+.carta h2{
+margin-bottom:15px;
+}
