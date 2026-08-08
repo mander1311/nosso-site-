@@ -112,9 +112,10 @@
         try{
           const resp = await fetch('/api/playlists', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url, title: mediaTitle.value.trim() }) });
           const j = await resp.json();
+          if(!resp.ok){ console.error('POST /api/playlists failed', resp.status, j); alert('Erro ao adicionar: ' + (j.error || resp.status)); return; }
           mediaUrl.value = ''; mediaTitle.value = '';
           renderList(j.items || []);
-        } catch(e){ alert('Erro ao adicionar') }
+        } catch(e){ console.error(e); alert('Erro ao adicionar') }
       });
     }
 
@@ -130,13 +131,15 @@
         try{
           const resp = await fetch('/api/upload', { method: 'POST', body: fd });
           const j = await resp.json();
+          if(!resp.ok){ console.error('POST /api/upload failed', resp.status, j); alert('Erro no upload: ' + (j.error || resp.status)); return; }
           if(j.url){
             const addResp = await fetch('/api/playlists', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url: j.url, title: f.name }) });
             const addJson = await addResp.json();
+            if(!addResp.ok){ console.error('POST /api/playlists failed', addResp.status, addJson); alert('Erro ao adicionar após upload: ' + (addJson.error || addResp.status)); return; }
             renderList(addJson.items || []);
             fileInput.value = '';
           } else alert('Upload falhou');
-        } catch(e){ alert('Erro no upload') }
+        } catch(e){ console.error(e); alert('Erro no upload') }
       });
     }
 

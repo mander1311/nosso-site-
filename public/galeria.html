@@ -82,7 +82,6 @@
 					btn.style.cursor = 'pointer';
 					btn.addEventListener('click', async () => {
 						if(!confirm('Remover esta imagem?')) return;
-						// call API to remove
 						try{
 							const resp = await fetch('/api/gallery', {
 								method: 'DELETE',
@@ -90,9 +89,14 @@
 								body: JSON.stringify({ index: idx })
 							});
 							const j = await resp.json();
+							if(!resp.ok){
+								console.error('DELETE /api/gallery failed', resp.status, j);
+								alert('Erro ao remover: ' + (j.error || resp.status));
+								return;
+							}
 							images = j.images || [];
 							render();
-						} catch(e){ alert('Erro ao remover') }
+						} catch(e){ console.error(e); alert('Erro ao remover') }
 					});
 					wrap.appendChild(btn);
 					container.appendChild(wrap);
@@ -130,10 +134,11 @@
 						body: JSON.stringify({ url })
 					});
 					const j = await resp.json();
+					if(!resp.ok){ console.error('POST /api/gallery failed', resp.status, j); alert('Erro ao adicionar: ' + (j.error || resp.status)); return; }
 					images = j.images || images;
 					newUrl.value = '';
 					render();
-				} catch(e){ alert('Erro ao adicionar') }
+				} catch(e){ console.error(e); alert('Erro ao adicionar') }
 			});
 		}
 
@@ -147,6 +152,7 @@
 				try{
 					const resp = await fetch('/api/upload', { method: 'POST', body: fd });
 					const j = await resp.json();
+					if(!resp.ok){ console.error('POST /api/upload failed', resp.status, j); alert('Erro no upload: ' + (j.error || resp.status)); return; }
 					if(j.url){
 						// add to gallery
 						const addResp = await fetch('/api/gallery', {
@@ -155,6 +161,7 @@
 							body: JSON.stringify({ url: j.url })
 						});
 						const addJson = await addResp.json();
+						if(!addResp.ok){ console.error('POST /api/gallery failed', addResp.status, addJson); alert('Erro ao adicionar após upload: ' + (addJson.error || addResp.status)); return; }
 						images = addJson.images || images;
 						render();
 					} else {
