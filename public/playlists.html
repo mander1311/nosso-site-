@@ -27,12 +27,13 @@
 <div id="adminToolbar" style="max-width:900px;margin:0 auto 18px;display:none;gap:10px;">
   <input id="mediaTitle" placeholder="Título (opcional)" style="width:40%;padding:10px;border-radius:12px;border:none;margin-right:8px;">
   <input id="mediaUrl" placeholder="Cole a URL do arquivo (https://...)" style="width:40%;padding:10px;border-radius:12px;border:none;">
-  <button id="addMediaBtn">Adicionar URL</button>
+  <button type="button" id="addMediaBtn">Adicionar URL</button>
   <form id="uploadForm" style="display:inline-block;margin-left:10px;">
     <input type="file" id="fileInput" accept="audio/*,video/*" style="vertical-align:middle;">
     <button type="submit">Upload</button>
   </form>
 </div>
+<div id="statusMessage" style="max-width:900px;margin:0 auto 18px;color:#ffdddd;font-size:0.95rem;opacity:0.85"></div>
 
 <div id="listArea" style="max-width:900px;margin:0 auto;display:grid;gap:16px;">
   <!-- playlist items rendered here -->
@@ -105,17 +106,23 @@
     const addBtn = document.getElementById('addMediaBtn');
     const mediaUrl = document.getElementById('mediaUrl');
     const mediaTitle = document.getElementById('mediaTitle');
+    const statusMessage = document.getElementById('statusMessage');
+    function setStatus(text, isError = false){
+      statusMessage.innerText = text;
+      statusMessage.style.color = isError ? '#ff9999' : '#b2ffb2';
+    }
     if(addBtn){
       addBtn.addEventListener('click', async () => {
         const url = mediaUrl.value.trim();
-        if(!url) return alert('Cole a URL');
+        if(!url){ setStatus('Cole a URL antes de adicionar.', true); return; }
         try{
           const resp = await fetch('/api/playlists', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url, title: mediaTitle.value.trim() }) });
           const j = await resp.json();
-          if(!resp.ok){ console.error('POST /api/playlists failed', resp.status, j); alert('Erro ao adicionar: ' + (j.error || resp.status)); return; }
+          if(!resp.ok){ console.error('POST /api/playlists failed', resp.status, j); setStatus('Erro ao adicionar: ' + (j.error || resp.status), true); return; }
           mediaUrl.value = ''; mediaTitle.value = '';
           renderList(j.items || []);
-        } catch(e){ console.error(e); alert('Erro ao adicionar') }
+          setStatus('URL adicionada com sucesso.');
+        } catch(e){ console.error(e); setStatus('Erro ao adicionar. Verifique o console.', true); }
       });
     }
 
@@ -126,20 +133,23 @@
       uploadForm.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         const f = fileInput.files[0];
-        if(!f) return alert('Escolha um arquivo');
+        if(!f){ setStatus('Escolha um arquivo antes de fazer upload.', true); return; }
         const fd = new FormData(); fd.append('file', f);
         try{
           const resp = await fetch('/api/upload', { method: 'POST', body: fd });
           const j = await resp.json();
-          if(!resp.ok){ console.error('POST /api/upload failed', resp.status, j); alert('Erro no upload: ' + (j.error || resp.status)); return; }
+          if(!resp.ok){ console.error('POST /api/upload failed', resp.status, j); setStatus('Erro no upload: ' + (j.error || resp.status), true); return; }
           if(j.url){
             const addResp = await fetch('/api/playlists', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url: j.url, title: f.name }) });
             const addJson = await addResp.json();
-            if(!addResp.ok){ console.error('POST /api/playlists failed', addResp.status, addJson); alert('Erro ao adicionar após upload: ' + (addJson.error || addResp.status)); return; }
+            if(!addResp.ok){ console.error('POST /api/playlists failed', addResp.status, addJson); setStatus('Erro ao adicionar após upload: ' + (addJson.error || addResp.status), true); return; }
             renderList(addJson.items || []);
             fileInput.value = '';
-          } else alert('Upload falhou');
-        } catch(e){ console.error(e); alert('Erro no upload') }
+            setStatus('Upload concluído e item adicionado.');
+          } else {
+            setStatus('Upload falhou.', true);
+          }
+        } catch(e){ console.error(e); setStatus('Erro no upload. Veja o console.', true); }
       });
     }
 
