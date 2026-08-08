@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: nosso-site-backend
+    env: node
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
