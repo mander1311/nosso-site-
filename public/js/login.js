@@ -7,16 +7,19 @@ document.getElementById("senha")
 
 if(senha === "130311"){
 
-window.location.href =
-"home.html";
+	// acesso normal
+	localStorage.setItem('role','user');
+	window.location.href = "home.html";
 
-}
-else{
+} else if (senha === "131109"){
 
-document
-.getElementById("erro")
-.innerText =
-"Data incorreta ❤️";
+	// acesso desenvolvedor
+	localStorage.setItem('role','dev');
+	window.location.href = "home.html";
+
+} else {
+
+	document.getElementById("erro").innerText = "Data incorreta ❤️";
 
 }
 

@@ -24,13 +24,172 @@
 
 <h1>📸 Nossas Fotos</h1>
 
-<div class="galeria">
+<div id="adminToolbar" style="max-width:900px;margin:0 auto 18px;display:none;gap:10px;">
+		<input id="newImageUrl" placeholder="Cole a URL da imagem (https://...)" style="width:50%;padding:10px;border-radius:12px;border:none;">
+		<button id="addImageBtn">Adicionar URL</button>
+		<form id="uploadForm" style="display:inline-block;margin-left:10px;">
+			<input type="file" id="fileInput" accept="image/*" style="vertical-align:middle;">
+			<button type="submit">Fazer upload</button>
+		</form>
+		<button id="resetGalleryBtn" style="background:rgba(255,255,255,.08);">Restaurar padrão</button>
+	</div>
 
-<img src="fotos/foto1.jpg" alt="">
-<img src="fotos/foto2.jpg" alt="">
-<img src="fotos/foto3.jpg" alt="">
+<div class="galeria" id="galleryContainer">
 
 </div>
+
+<script>
+	(function(){
+		const defaultImages = [
+			'fotos/foto1.jpg',
+			'fotos/foto2.jpg',
+			'fotos/foto3.jpg'
+		];
+
+		let images = [];
+
+		const role = localStorage.getItem('role');
+		const adminToolbar = document.getElementById('adminToolbar');
+		if(role === 'dev'){
+			adminToolbar.style.display = 'flex';
+			adminToolbar.style.gap = '10px';
+			adminToolbar.style.marginBottom = '25px';
+		}
+
+		const container = document.getElementById('galleryContainer');
+
+		function render(){
+			container.innerHTML = '';
+			images.forEach((src, idx) => {
+				const img = document.createElement('img');
+				img.src = src;
+				img.alt = '';
+				if(role === 'dev'){
+					const wrap = document.createElement('div');
+					wrap.style.position = 'relative';
+					wrap.style.overflow = 'hidden';
+					wrap.appendChild(img);
+					const btn = document.createElement('button');
+					btn.innerText = 'Remover';
+					btn.style.position = 'absolute';
+					btn.style.top = '10px';
+					btn.style.right = '10px';
+					btn.style.background = 'rgba(0,0,0,.5)';
+					btn.style.color = 'white';
+					btn.style.border = 'none';
+					btn.style.padding = '8px 10px';
+					btn.style.borderRadius = '10px';
+					btn.style.cursor = 'pointer';
+					btn.addEventListener('click', async () => {
+						if(!confirm('Remover esta imagem?')) return;
+						// call API to remove
+						try{
+							const resp = await fetch('/api/gallery', {
+								method: 'DELETE',
+								headers: {'Content-Type':'application/json'},
+								body: JSON.stringify({ index: idx })
+							});
+							const j = await resp.json();
+							images = j.images || [];
+							render();
+						} catch(e){ alert('Erro ao remover') }
+					});
+					wrap.appendChild(btn);
+					container.appendChild(wrap);
+				} else {
+					container.appendChild(img);
+				}
+			});
+		}
+
+		// fetch gallery from API
+		async function loadGallery(){
+			try{
+				const resp = await fetch('/api/gallery');
+				const j = await resp.json();
+				images = j.images || defaultImages.slice();
+				render();
+			} catch(e){ images = defaultImages.slice(); render(); }
+		}
+
+		// admin actions
+		const addBtn = document.getElementById('addImageBtn');
+		const newUrl = document.getElementById('newImageUrl');
+		const resetBtn = document.getElementById('resetGalleryBtn');
+		const uploadForm = document.getElementById('uploadForm');
+		const fileInput = document.getElementById('fileInput');
+
+		if(addBtn){
+			addBtn.addEventListener('click', async () => {
+				const url = newUrl.value.trim();
+				if(!url) return alert('Cole a URL da imagem');
+				try{
+					const resp = await fetch('/api/gallery', {
+						method: 'POST',
+						headers: {'Content-Type':'application/json'},
+						body: JSON.stringify({ url })
+					});
+					const j = await resp.json();
+					images = j.images || images;
+					newUrl.value = '';
+					render();
+				} catch(e){ alert('Erro ao adicionar') }
+			});
+		}
+
+		if(uploadForm){
+			uploadForm.addEventListener('submit', async (ev) => {
+				ev.preventDefault();
+				const f = fileInput.files[0];
+				if(!f) return alert('Escolha um arquivo');
+				const fd = new FormData();
+				fd.append('file', f);
+				try{
+					const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+					const j = await resp.json();
+					if(j.url){
+						// add to gallery
+						const addResp = await fetch('/api/gallery', {
+							method: 'POST',
+							headers: {'Content-Type':'application/json'},
+							body: JSON.stringify({ url: j.url })
+						});
+						const addJson = await addResp.json();
+						images = addJson.images || images;
+						render();
+					} else {
+						alert('Upload falhou');
+					}
+				} catch(e){ alert('Erro no upload') }
+			});
+		}
+
+		if(resetBtn){
+			resetBtn.addEventListener('click', async () => {
+				if(!confirm('Restaurar galeria padrão no servidor?')) return;
+				try{
+					// overwrite gallery file by calling DELETE for each and then re-POST defaults
+					const resp = await fetch('/api/gallery');
+					const j = await resp.json();
+					const current = j.images || [];
+					// delete all server-side
+					for(let i=current.length-1;i>=0;i--){
+						await fetch('/api/gallery', { method: 'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ index: i }) });
+					}
+					// add defaults
+					for(const u of defaultImages){
+						await fetch('/api/gallery', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url: u }) });
+					}
+					await loadGallery();
+				} catch(e){ alert('Erro ao resetar') }
+			});
+		}
+
+		// initial load
+		loadGallery();
+
+	})();
+</script>
 
 </section>
 
