@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playlists 🎵</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<nav class="top-menu">
+<a href="home.html">❤️ Início</a>
+<a href="galeria.html">📸 Fotos</a>
+<a href="cartas.html">💌 Cartas</a>
+<a href="abrir-depois.html">🌙 Abra Quando</a>
+<a href="playlists.html">🎵 Playlists</a>
+
+</nav>
+
+<section class="page">
+
+<h1>🎵 Playlists</h1>
+
+<p style="text-align:center;opacity:.9;margin-bottom:30px;">Coloque suas músicas aqui. Para adicionar arquivos, faça upload para um host (Cloudinary / S3 / GitHub release) e cole a URL abaixo.</p>
+
+<div style="max-width:900px;margin:0 auto;display:grid;gap:20px;">
+
+  <!-- Exemplo de áudio (mp3) -->
+  <div class="carta">
+    <h2>🎧 Música Exemplo</h2>
+    <audio controls preload="none" style="width:100%;">
+      <source src="media/exemplo.mp3" type="audio/mpeg">
+      Seu navegador não suporta o elemento de áudio.
+    </audio>
+  </div>
+
+  <!-- Exemplo de vídeo (mp4) -->
+  <div class="carta">
+    <h2>🎬 Vídeo Exemplo</h2>
+    <video controls preload="none" style="width:100%;border-radius:12px;">
+      <source src="media/exemplo.mp4" type="video/mp4">
+      Seu navegador não suporta o elemento de vídeo.
+    </video>
+  </div>
+
+  <!-- Campo para inserir URL pública da mídia -->
+  <div class="carta">
+    <h2>➕ Adicionar URL</h2>
+    <p style="opacity:.85;margin-bottom:12px;">Cole aqui a URL pública do arquivo mp3/mp4 e clique em "Adicionar" para pré-visualizar.</p>
+    <input id="mediaUrl" placeholder="https://.../arquivo.mp3" style="width:100%;padding:12px;border-radius:12px;border:none;margin-bottom:10px;">
+    <div style="display:flex;gap:10px;">
+      <button onclick="previewMedia()">Adicionar</button>
+      <button onclick="clearPreview()" style="background:rgba(255,255,255,.08);">Limpar</button>
+    </div>
+    <div id="previewArea" style="margin-top:16px;"></div>
+  </div>
+
+</div>
+
+</section>
+
+<script>
+function previewMedia(){
+  const url = document.getElementById('mediaUrl').value.trim();
+  const area = document.getElementById('previewArea');
+  if(!url){ alert('Cole a URL do arquivo mp3/mp4'); return }
+  // detecta por extensão simples
+  const lower = url.toLowerCase();
+  if(lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.ogg')){
+    area.innerHTML = `<audio controls style="width:100%;"><source src="${url}"></audio>`;
+  } else if(lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')){
+    area.innerHTML = `<video controls style="width:100%;"><source src="${url}"></video>`;
+  } else {
+    area.innerHTML = `<p style="opacity:.85">URL adicionada. Se não for mp3/mp4, pode não funcionar.</p>`;
+  }
+}
+function clearPreview(){
+  document.getElementById('mediaUrl').value='';
+  document.getElementById('previewArea').innerHTML='';
+}
+</script>
+
+</body>
+</html>
