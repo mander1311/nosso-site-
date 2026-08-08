@@ -13,6 +13,7 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
 const DATA_DIR = path.join(__dirname, 'data');
 const GALLERY_FILE = path.join(DATA_DIR, 'gallery.json');
+const PLAYLISTS_FILE = path.join(DATA_DIR, 'playlists.json');
 
 // ensure folders
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -39,6 +40,20 @@ async function writeGallery(arr){
   await fsp.writeFile(GALLERY_FILE, JSON.stringify(arr, null, 2), 'utf8');
 }
 
+async function readPlaylists(){
+  try{
+    const raw = await fsp.readFile(PLAYLISTS_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch(e){
+    await writePlaylists([]);
+    return [];
+  }
+}
+
+async function writePlaylists(arr){
+  await fsp.writeFile(PLAYLISTS_FILE, JSON.stringify(arr, null, 2), 'utf8');
+}
+
 // multer for uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -59,6 +74,34 @@ app.use(express.static(PUBLIC_DIR));
 app.get('/api/gallery', async (req, res) => {
   const arr = await readGallery();
   res.json({ images: arr });
+});
+
+// Playlists endpoints
+app.get('/api/playlists', async (req, res) => {
+  const list = await readPlaylists();
+  res.json({ items: list });
+});
+
+app.post('/api/playlists', async (req, res) => {
+  const { url, title } = req.body;
+  if(!url) return res.status(400).json({ error: 'url required' });
+  const list = await readPlaylists();
+  list.push({ url, title: title || '' });
+  await writePlaylists(list);
+  res.json({ ok:true, items: list });
+});
+
+app.delete('/api/playlists', async (req, res) => {
+  const { index } = req.body;
+  let list = await readPlaylists();
+  if(typeof index === 'number'){
+    if(index < 0 || index >= list.length) return res.status(400).json({ error:'index invalid' });
+    list.splice(index,1);
+  } else {
+    return res.status(400).json({ error:'index required' });
+  }
+  await writePlaylists(list);
+  res.json({ ok:true, items: list });
 });
 
 app.post('/api/gallery', async (req, res) => {

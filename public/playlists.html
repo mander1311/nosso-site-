@@ -24,64 +24,127 @@
 
 <h1>🎵 Playlists</h1>
 
-<p style="text-align:center;opacity:.9;margin-bottom:30px;">Coloque suas músicas aqui. Para adicionar arquivos, faça upload para um host (Cloudinary / S3 / GitHub release) e cole a URL abaixo.</p>
-
-<div style="max-width:900px;margin:0 auto;display:grid;gap:20px;">
-
-  <!-- Exemplo de áudio (mp3) -->
-  <div class="carta">
-    <h2>🎧 Música Exemplo</h2>
-    <audio controls preload="none" style="width:100%;">
-      <source src="media/exemplo.mp3" type="audio/mpeg">
-      Seu navegador não suporta o elemento de áudio.
-    </audio>
-  </div>
-
-  <!-- Exemplo de vídeo (mp4) -->
-  <div class="carta">
-    <h2>🎬 Vídeo Exemplo</h2>
-    <video controls preload="none" style="width:100%;border-radius:12px;">
-      <source src="media/exemplo.mp4" type="video/mp4">
-      Seu navegador não suporta o elemento de vídeo.
-    </video>
-  </div>
-
-  <!-- Campo para inserir URL pública da mídia -->
-  <div class="carta">
-    <h2>➕ Adicionar URL</h2>
-    <p style="opacity:.85;margin-bottom:12px;">Cole aqui a URL pública do arquivo mp3/mp4 e clique em "Adicionar" para pré-visualizar.</p>
-    <input id="mediaUrl" placeholder="https://.../arquivo.mp3" style="width:100%;padding:12px;border-radius:12px;border:none;margin-bottom:10px;">
-    <div style="display:flex;gap:10px;">
-      <button onclick="previewMedia()">Adicionar</button>
-      <button onclick="clearPreview()" style="background:rgba(255,255,255,.08);">Limpar</button>
-    </div>
-    <div id="previewArea" style="margin-top:16px;"></div>
-  </div>
-
+<div id="adminToolbar" style="max-width:900px;margin:0 auto 18px;display:none;gap:10px;">
+  <input id="mediaTitle" placeholder="Título (opcional)" style="width:40%;padding:10px;border-radius:12px;border:none;margin-right:8px;">
+  <input id="mediaUrl" placeholder="Cole a URL do arquivo (https://...)" style="width:40%;padding:10px;border-radius:12px;border:none;">
+  <button id="addMediaBtn">Adicionar URL</button>
+  <form id="uploadForm" style="display:inline-block;margin-left:10px;">
+    <input type="file" id="fileInput" accept="audio/*,video/*" style="vertical-align:middle;">
+    <button type="submit">Upload</button>
+  </form>
 </div>
 
-</section>
+<div id="listArea" style="max-width:900px;margin:0 auto;display:grid;gap:16px;">
+  <!-- playlist items rendered here -->
+</div>
 
 <script>
-function previewMedia(){
-  const url = document.getElementById('mediaUrl').value.trim();
-  const area = document.getElementById('previewArea');
-  if(!url){ alert('Cole a URL do arquivo mp3/mp4'); return }
-  // detecta por extensão simples
-  const lower = url.toLowerCase();
-  if(lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.ogg')){
-    area.innerHTML = `<audio controls style="width:100%;"><source src="${url}"></audio>`;
-  } else if(lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')){
-    area.innerHTML = `<video controls style="width:100%;"><source src="${url}"></video>`;
-  } else {
-    area.innerHTML = `<p style="opacity:.85">URL adicionada. Se não for mp3/mp4, pode não funcionar.</p>`;
-  }
-}
-function clearPreview(){
-  document.getElementById('mediaUrl').value='';
-  document.getElementById('previewArea').innerHTML='';
-}
+  (function(){
+    const role = localStorage.getItem('role');
+    const adminToolbar = document.getElementById('adminToolbar');
+    if(role === 'dev'){
+      adminToolbar.style.display = 'flex';
+      adminToolbar.style.alignItems = 'center';
+    }
+
+    const listArea = document.getElementById('listArea');
+
+    async function load(){
+      try{
+        const resp = await fetch('/api/playlists');
+        const j = await resp.json();
+        renderList(j.items || []);
+      } catch(e){ renderList([]); }
+    }
+
+    function renderList(items){
+      listArea.innerHTML = '';
+      if(items.length === 0){
+        listArea.innerHTML = '<p style="text-align:center;opacity:.8">Nenhuma playlist adicionada ainda.</p>';
+        return;
+      }
+      items.forEach((it, idx) => {
+        const card = document.createElement('div');
+        card.className = 'carta';
+        const h = document.createElement('h2');
+        h.innerText = it.title || `Mídia ${idx+1}`;
+        card.appendChild(h);
+        const lower = it.url.toLowerCase();
+        if(lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.ogg')){
+          const a = document.createElement('audio');
+          a.controls = true; a.style.width='100%';
+          a.innerHTML = `<source src="${it.url}">`;
+          card.appendChild(a);
+        } else if(lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')){
+          const v = document.createElement('video');
+          v.controls = true; v.style.width='100%'; v.style.borderRadius='12px';
+          v.innerHTML = `<source src="${it.url}">`;
+          card.appendChild(v);
+        } else {
+          const p = document.createElement('p'); p.style.opacity='.9'; p.innerText = it.url; card.appendChild(p);
+        }
+        if(role === 'dev'){
+          const btn = document.createElement('button');
+          btn.innerText = 'Remover';
+          btn.style.marginTop = '8px';
+          btn.addEventListener('click', async () => {
+            if(!confirm('Remover este item?')) return;
+            try{
+              const resp = await fetch('/api/playlists', { method: 'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ index: idx }) });
+              const j = await resp.json();
+              renderList(j.items || []);
+            } catch(e){ alert('Erro ao remover') }
+          });
+          card.appendChild(btn);
+        }
+        listArea.appendChild(card);
+      });
+    }
+
+    // add by URL
+    const addBtn = document.getElementById('addMediaBtn');
+    const mediaUrl = document.getElementById('mediaUrl');
+    const mediaTitle = document.getElementById('mediaTitle');
+    if(addBtn){
+      addBtn.addEventListener('click', async () => {
+        const url = mediaUrl.value.trim();
+        if(!url) return alert('Cole a URL');
+        try{
+          const resp = await fetch('/api/playlists', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url, title: mediaTitle.value.trim() }) });
+          const j = await resp.json();
+          mediaUrl.value = ''; mediaTitle.value = '';
+          renderList(j.items || []);
+        } catch(e){ alert('Erro ao adicionar') }
+      });
+    }
+
+    // upload
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    if(uploadForm){
+      uploadForm.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const f = fileInput.files[0];
+        if(!f) return alert('Escolha um arquivo');
+        const fd = new FormData(); fd.append('file', f);
+        try{
+          const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+          const j = await resp.json();
+          if(j.url){
+            const addResp = await fetch('/api/playlists', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url: j.url, title: f.name }) });
+            const addJson = await addResp.json();
+            renderList(addJson.items || []);
+            fileInput.value = '';
+          } else alert('Upload falhou');
+        } catch(e){ alert('Erro no upload') }
+      });
+    }
+
+    load();
+  })();
 </script>
+
+</section>
 
 </body>
 </html>
